@@ -51,4 +51,6 @@ RETRY_ON_THROUGHPUT_EXCEEDED = False
 DYNAMO_IS_SECURE = True
 
 # TODO: Remove after https://github.com/boto/boto/issues/2921
-BOTO_PATH = '/Users/cq/Dropbox/src/clari/clari_dynamo/boto'
+BOTO_PATH = os.path.dirname(
+                os.path.dirname(
+                    os.path.abspath(__file__))) + '/boto'
