@@ -4,8 +4,10 @@ import time
 import sys
 import os
 
+from conf.constants import *
+
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
-sys.path.insert(0, '/Users/cq/Dropbox/src/clari/clari_dynamo/boto')
+sys.path.insert(0, BOTO_PATH)
 
 from boto.dynamodb2.exceptions import ProvisionedThroughputExceededException
 from boto.dynamodb2.layer1 import DynamoDBConnection
@@ -15,12 +17,15 @@ from boto.dynamodb.types import Binary
 import s3_kms
 
 from local_dynamo.localdb import LocalDb
-from conf.constants import *
 
 
 class ClariDynamo(object):
     def __init__(self, aws_access_key, aws_secret_access_key, is_secure,
-                 is_remote=False, host=None, port=None, in_memory=False):
+                 is_remote=False, host=None, port=None, in_memory=False,
+                 auth_func=None):
+        if auth_func and not auth_func():
+            raise self.AuthException()
+
         self.host = host
         self.port = port
         self.is_secure = is_secure
@@ -58,11 +63,6 @@ class ClariDynamo(object):
         assert type(data) == dict
         self._check_for_meta(data, table, operation='delete')
         item.delete()
-
-    def delete(self, table, item):
-        if type(item) == dict and item.get('$data'):
-            if item.get("$s3_key"):
-                s3_kms.delete(item.get("$s3_key"))
 
     def create_table(self, name, **kwargs):
         return BotoTable.create(name, connection=self.conn, **kwargs)
@@ -130,3 +130,6 @@ class ClariDynamo(object):
         except Exception as e:
             print(e)
             raise e
+
+    class AuthException(Exception):
+        pass

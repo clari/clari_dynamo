@@ -59,3 +59,5 @@ target/
 conf/secrets.py
 
 local_dynamo/shared-local-instance.db
+kruft
+tables

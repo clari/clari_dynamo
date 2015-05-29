@@ -2,12 +2,13 @@
 import os
 import sys
 
+from conf.constants import *
+
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)) + '/boto')
+sys.path.insert(0, BOTO_PATH)
 
 os.environ['CLARI_DYNAMO_TEST'] = 'True'
 
-from conf.constants import *
 from clari_dynamo.clari_dynamo import ClariDynamo
 from boto.dynamodb2.fields import HashKey, RangeKey, KeysOnlyIndex, GlobalAllIndex
 from boto.dynamodb2.table import Table
@@ -35,6 +36,24 @@ class ClariDynamoTest(unittest.TestCase):
         tables = cls.db.conn.list_tables()
         assert len(tables['TableNames']) == 0, \
             'tables should be cleared at start of tests'
+
+    def test_auth(self):
+        try:
+            ClariDynamo(
+                aws_access_key        = 'test_db',
+                aws_secret_access_key = 'test_key',
+                host                  = 'localhost',
+                port                  = 8001,
+                is_remote             = False,
+                in_memory             = True,
+                is_secure             = False,
+                auth_func=lambda: False)
+        except ClariDynamo.AuthException:
+            did_raise_exception = True
+        else:
+            did_raise_exception = False
+
+        self.assertTrue(did_raise_exception, 'Should fail authorization')
 
     def test_binary_input(self):
         db = self.db
