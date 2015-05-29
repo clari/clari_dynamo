@@ -11,7 +11,8 @@ from clari_dynamo.utils import env
 if os.path.isfile(os.path.dirname(os.path.abspath(__file__)) + '/secrets.py'):
     import clari_dynamo.conf.secrets
 else:
-    print('No secrets.py found, request access or fill out secrets.example.py')
+    print('No secrets.py found, request access, set the variables documented in '
+          'secrets.example.py')
 
 #######################################################################
 # Please don't put sensitive information here. Use secrets.py instead #
