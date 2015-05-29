@@ -1,15 +1,14 @@
 # -*- coding: utf-8 -*-
 from __future__ import print_function
 import io
-import os
 import zipfile
 import subprocess
-from conf.cd_logger import logging
+
 import requests
-from multiprocessing import Process
-import sys
-import signal
-from conf.constants import *
+
+from clari_dynamo.conf.cd_logger import logging
+from clari_dynamo.conf.constants import *
+
 
 URL =  'http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest.zip'
 JAR =  'DynamoDBLocal.jar'

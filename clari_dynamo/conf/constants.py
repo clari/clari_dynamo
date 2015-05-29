@@ -3,11 +3,13 @@
 import os
 import json
 
-from clari_dynamo.utils import env
 from cryptography.fernet import Fernet
 
+from clari_dynamo.utils import env
+
+
 if os.path.isfile(os.path.dirname(os.path.abspath(__file__)) + '/secrets.py'):
-    import conf.secrets
+    import clari_dynamo.conf.secrets
 else:
     print('No secrets.py found, request access or fill out secrets.example.py')
 
@@ -52,5 +54,6 @@ DYNAMO_IS_SECURE = True
 
 # TODO: Remove after https://github.com/boto/boto/issues/2921
 BOTO_PATH = os.path.dirname(
-                os.path.dirname(
-                    os.path.abspath(__file__))) + '/boto'
+    os.path.dirname(
+        os.path.dirname(
+            os.path.abspath(__file__)))) + '/boto'

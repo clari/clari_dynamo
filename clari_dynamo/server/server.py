@@ -4,7 +4,7 @@ import os
 import sys
 import requests
 
-from conf.constants import *
+from clari_dynamo.conf.constants import *
 
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
 sys.path.insert(0, BOTO_PATH)

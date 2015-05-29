@@ -56,8 +56,8 @@ target/
 # boto
 .boto
 
-conf/secrets.py
+clari_dynamo/conf/secrets.py
 
-local_dynamo/shared-local-instance.db
+clari_dynamo/local_dynamo/shared-local-instance.db
 kruft
 tables

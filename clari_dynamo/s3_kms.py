@@ -1,12 +1,8 @@
-import sys
-import os
 import utils
 from conf.constants import *
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
-
-from urlparse import urlparse
 
 CONNECTION = S3Connection(host='s3.amazonaws.com', debug=2, is_secure=True)
 BUCKET = CONNECTION.get_bucket(AWS_KMS_S3_BUCKET_NAME)

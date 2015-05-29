@@ -2,9 +2,9 @@
 import random
 import time
 import sys
-import os
 
 from conf.constants import *
+
 
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
 sys.path.insert(0, BOTO_PATH)
@@ -15,7 +15,6 @@ from boto.dynamodb2.table import Table as BotoTable
 from boto.dynamodb.types import Binary
 
 import s3_kms
-
 from local_dynamo.localdb import LocalDb
 
 

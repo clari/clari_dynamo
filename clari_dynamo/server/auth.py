@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import requests
-from conf.constants import *
+from clari_dynamo.conf.constants import *
 import json
 
 
