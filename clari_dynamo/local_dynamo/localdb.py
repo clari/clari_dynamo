@@ -3,10 +3,8 @@ from __future__ import print_function
 import io
 import zipfile
 import subprocess
-
 import requests
 
-from clari_dynamo.conf.cd_logger import logging
 from clari_dynamo.conf.constants import *
 
 
