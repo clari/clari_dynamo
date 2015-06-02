@@ -7,8 +7,10 @@ from clari_dynamo.conf.constants import *
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
+from boto.s3.connection import OrdinaryCallingFormat
 
-CONNECTION = S3Connection(host='s3.amazonaws.com', debug=2, is_secure=True)
+CONNECTION = S3Connection(host='s3.amazonaws.com', debug=2, is_secure=True,
+                          calling_format=OrdinaryCallingFormat())
 BUCKET = CONNECTION.get_bucket(AWS_KMS_S3_BUCKET_NAME)
 
 
