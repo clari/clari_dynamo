@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function, unicode_literals
+from builtins import (bytes, str, open, super, range, zip, round, input, int, pow, object)
+
 import os
 import sys
 
@@ -57,37 +60,56 @@ class ClariDynamoTest(unittest.TestCase):
 
     def test_binary_input(self):
         db = self.db
-        table_name = 'test__binary_input'
-        table = self.create_test_table(table_name)
+        table = self.create_test_table(self._testMethodName)
 
         base64_data = 'AA'
-        db.put_item(table, {'id': 'asdf', 'binaryTest': {
-            '$data': base64_data,
-            '$base64': True
-        }})
+        tenant_id = '123'
+        db.put_item(table, tenant_id, {
+            'id': self._testMethodName,
+            'binaryTest': {
+                '$data': base64_data,
+                '$base64': True
+            }})
 
-        retrieved = table.get_item(id='asdf')
+        retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
         self.assertEquals(retrieved['binaryTest'], base64_data)
-        db.drop_table(table_name)
+        db.drop_table(self._testMethodName)
 
     def test4_s3_kms_data(self):
         db = self.db
-        table_name = 'test__s3_kms_input'
-        table = self.create_test_table(table_name)
+        table = self.create_test_table(self._testMethodName)
         details = 'awesome data'
         item = {
-            'id': 'test-kms-s3',
+            'id': self._testMethodName,
             'details': {
                 '$data': details,
                 '$s3': True,
             }
         }
-
-        db.put_item(table, item)
-        retrieved = db.get_item(table, id='test-kms-s3')
+        tenant_id = '123'
+        db.put_item(table, item, tenant_id)
+        retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
         self.assertEquals(retrieved['details']['$data'], details)
         db.delete_item(table, retrieved)
-        db.drop_table(table_name)
+        db.drop_table(self._testMethodName)
+
+    def test_tenant_id_protection(self):
+        db = self.db
+        table = self.create_test_table(self._testMethodName)
+        details = 'tenant data'
+        item = {
+            'id': self._testMethodName,
+            'details': {
+                '$data': details,
+
+            }
+        }
+        tenant_id = '123'
+        db.put_item(table, item, tenant_id)
+        retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
+        self.assertEquals(retrieved['details']['$data'], details)
+        db.delete_item(table, retrieved)
+        db.drop_table(self._testMethodName)
 
     def create_test_table(self, name):
         return self.db.create_table(name,

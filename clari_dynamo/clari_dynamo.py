@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function, unicode_literals
+from builtins import (bytes, str, open, super, range, zip, round, input, int, pow, object)
+from clari_dynamo.conf.constants import *
+
 import random
 import time
 import sys
-
-from conf.constants import *
-
 
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
 sys.path.insert(0, BOTO_PATH)
@@ -47,13 +48,18 @@ class ClariDynamo(object):
             port                  = port,
             is_secure             = is_secure)
 
-    def get_item(self, table, **id_query):
+    def get_item(self, table, tenant_id, **id_query):
         item = table.get_item(**id_query)
+        assert item['tenant_id'] == CRYPTO.decrypt(bytes(
+            item['encrypted_tenant_id'], 'UTF-8'))
         self._check_for_meta(item._data, table, operation='get')
         return item
 
-    def put_item(self, table, item):
+    def put_item(self, table, item, tenant_id):
         assert type(item) == dict
+        isinstance(tenant_id, str)
+        item['tenant_id'] = tenant_id
+        item['encrypted_tenant_id'] = CRYPTO.encrypt(bytes(tenant_id, 'UTF-8'))
         self._check_for_meta(item, table, operation='put')
         return self._put_with_retries(table, item, retry=0)
 

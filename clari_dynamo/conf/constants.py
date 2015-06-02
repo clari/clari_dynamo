@@ -1,18 +1,7 @@
 # -*- coding: utf-8 -*-
 
-### Python 2/3 compatibility: http://python-future.org/ ########################
-
-from __future__ import absolute_import, division, print_function
-from builtins import (bytes, str, open, super, range,
-                      zip, round, input, int, pow, object)
-
-# Following breaks unquote in cherrpy
-# # Refactored modules with clashing names on Py2 and Py3 are supported
-# # as follows:
-# from future import standard_library
-# standard_library.install_aliases()
-
-################################################################################
+from __future__ import absolute_import, division, print_function,unicode_literals
+from builtins import (bytes, str, open, super, range, zip, round, input, int, pow, object)
 
 import os
 import json

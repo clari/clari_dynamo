@@ -1,5 +1,9 @@
-import utils
-from conf.constants import *
+# -*- coding: utf-8 -*-
+from __future__ import absolute_import, division, print_function,unicode_literals
+from builtins import (bytes, str, open, super, range, zip, round, input, int, pow, object)
+
+import clari_dynamo.utils
+from clari_dynamo.conf.constants import *
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
