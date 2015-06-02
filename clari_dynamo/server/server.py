@@ -1,24 +1,17 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import, division, print_function,unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 from builtins import (bytes, str, open, super, range, zip, round, input, int, pow, object)
 
 import os
 import sys
 import requests
-
 from clari_dynamo.conf.constants import *
 
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
 sys.path.insert(0, BOTO_PATH)
-
 import cherrypy
-
-
 from boto.dynamodb2.table import Table
-
-
 from clari_dynamo.clari_dynamo import ClariDynamo
-
 import auth
 
 
@@ -36,15 +29,19 @@ class Server(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def table(self, name, tenant_id=None, purpose=None):
-        assert tenant_id, 'must define "tenant_id" query string param'
-        assert purpose,   'must define "purpose" dquery string param'
-        auth.check(cherrypy)
+        self.validate_request(purpose, tenant_id)
         if cherrypy.request.method in ['PUT', 'POST']:
             data = cherrypy.request.json
             table = Table(name)
             self.db.put_item(table, data)
             logging.info('creating a new item in ' + name)
-        return {'success': True}
+        return { 'success': True }
+
+    def validate_request(self, purpose, tenant_id):
+        assert tenant_id, 'must define "tenant_id" query string param'
+        assert purpose, 'must define "purpose" query string param'
+        assert cherrypy.request.scheme == 'https' or ENV_NAME == 'dev'
+        auth.check(cherrypy)
 
 cherrypy.config.update({
     'server.socket_host':       '0.0.0.0',  # Trust your Wi-Fi?
