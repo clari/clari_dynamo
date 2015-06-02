@@ -23,6 +23,7 @@ class Server(object):
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def index(self):
+        self.enforce_https_only()
         return HOME_TEXT
 
     @cherrypy.expose
@@ -37,10 +38,13 @@ class Server(object):
             logging.info('creating a new item in ' + name)
         return { 'success': True }
 
+    def enforce_https_only(self):
+        assert cherrypy.request.scheme == 'https' or ENV_NAME == 'dev'
+
     def validate_request(self, purpose, tenant_id):
         assert tenant_id, 'must define "tenant_id" query string param'
         assert purpose, 'must define "purpose" query string param'
-        assert cherrypy.request.scheme == 'https' or ENV_NAME == 'dev'
+        self.enforce_https_only()
         auth.check(cherrypy)
 
 cherrypy.config.update({
