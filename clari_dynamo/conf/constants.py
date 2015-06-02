@@ -1,12 +1,25 @@
 # -*- coding: utf-8 -*-
 
+### Python 2/3 compatibility: http://python-future.org/ ########################
+
+from __future__ import absolute_import, division, print_function
+from builtins import (bytes, str, open, super, range,
+                      zip, round, input, int, pow, object)
+
+# Following breaks unquote in cherrpy
+# # Refactored modules with clashing names on Py2 and Py3 are supported
+# # as follows:
+# from future import standard_library
+# standard_library.install_aliases()
+
+################################################################################
+
 import os
 import json
 
 from cryptography.fernet import Fernet
-
+from clari_dynamo.conf.cd_logger import logging
 from clari_dynamo.utils import env
-
 
 if os.path.isfile(os.path.dirname(os.path.abspath(__file__)) + '/secrets.py'):
     import clari_dynamo.conf.secrets

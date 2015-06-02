@@ -33,13 +33,15 @@ class Server(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
-    def table(self, name, tenant_id):
-        auth.check(cherrypy, tenant_id)
+    def table(self, name, tenant_id=None, purpose=None):
+        assert tenant_id, 'must define "tenant_id" query string param'
+        assert purpose,   'must define "purpose" dquery string param'
+        auth.check(cherrypy)
         if cherrypy.request.method in ['PUT', 'POST']:
             data = cherrypy.request.json
             table = Table(name)
             self.db.put_item(table, data)
-            cherrypy.log('creating a new item in ' + name)
+            logging.info('creating a new item in ' + name)
         return {'success': True}
 
 cherrypy.config.update({
