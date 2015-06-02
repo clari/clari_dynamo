@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from __future__ import absolute_import, division, print_function,unicode_literals
+from __future__ import absolute_import, division, print_function, unicode_literals
 from builtins import (bytes, str, open, super, range, zip, round, input, int, pow, object)
 
 import os
@@ -44,10 +44,11 @@ IS_REMOTE              = env('CLARI_DYNAMO_IS_REMOTE'             , default=Fals
 ENV_NAME               = env('CLARI_DYNAMO_ENVIRONMENT'           , default='dev')
 CRYPTO_KEY             = env('CLARI_DYNAMO_CRYPTO_KEY'            , default=None)
 AUTH_WEB_HOOK          = env('CLARI_DYNAMO_AUTH_WEB_HOOK'         , default=None)
-BASIC_AUTH_DICT_STR    = env('CLARI_DYNAMO_BASIC_AUTH_DICT'       , default=None)
+BASIC_AUTH_USERNAME    = env('CLARI_DYNAMO_BASIC_AUTH_USERNAME'   , default=None)
+BASIC_AUTH_PASSWORD    = env('CLARI_DYNAMO_BASIC_AUTH_PASSWORD'   , default=None)
 
-if BASIC_AUTH_DICT_STR:
-    BASIC_AUTH_DICT = json.loads(BASIC_AUTH_DICT_STR)
+if BASIC_AUTH_USERNAME:
+    BASIC_AUTH_DICT = {BASIC_AUTH_USERNAME: BASIC_AUTH_PASSWORD}
 else:
     BASIC_AUTH_DICT = None
 
