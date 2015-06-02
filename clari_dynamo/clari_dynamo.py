@@ -14,8 +14,8 @@ from boto.dynamodb2.layer1 import DynamoDBConnection
 from boto.dynamodb2.table import Table as BotoTable
 from boto.dynamodb.types import Binary
 
-import s3_kms
-from local_dynamo.localdb import LocalDb
+from . import s3_kms
+from .local_dynamo.localdb import LocalDb
 
 
 class ClariDynamo(object):
@@ -95,7 +95,7 @@ class ClariDynamo(object):
             #  base64 comes in from API, so set directly (minor hack)
             binary_data.value = value['$data']
 
-            assert(len(value.keys()) == 2,
+            assert(len(value) == 2,
                    'only $data and $base64 should be set on binary item')
 
             parent[key] = binary_data
