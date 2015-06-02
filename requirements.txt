@@ -1,5 +1,4 @@
 cherrypy
-boto==2.38.0
 boto3
 pytest
 dynamic-dynamodb
