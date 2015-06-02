@@ -5,3 +5,4 @@ pytest
 dynamic-dynamodb
 requests
 cryptography
+future
