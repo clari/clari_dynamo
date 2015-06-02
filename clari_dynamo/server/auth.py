@@ -45,4 +45,5 @@ if AUTH_WEB_HOOK:
         if should_forward_auth_check(cherrypy, tenant_id):
             forward_auth_check(cherrypy, tenant_id)
 else:
+    # Basic auth done by cherrypy.
     check = lambda *args: True
