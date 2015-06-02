@@ -73,7 +73,7 @@ db_conf = {
     'is_remote':             IS_REMOTE,
     'is_secure':             DYNAMO_IS_SECURE}
 
-if IS_REMOTE:
+if not IS_REMOTE:
     db_conf['host'] = 'localhost'
     db_conf['port'] = 8000
 
