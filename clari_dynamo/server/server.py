@@ -37,7 +37,11 @@ class Server(object):
         return { 'success': True }
 
     def enforce_https_only(self):
-        assert cherrypy.request.scheme == 'https' or ENV_NAME == 'dev'
+        assert (
+            cherrypy.request.scheme == 'https' or
+            cherrypy.request.headers['HTTP_X_FORWARDED_PROTO'].lower() == 'https' or
+            ENV_NAME == 'dev'
+        )
 
     def validate_request(self, purpose, tenant_id):
         assert tenant_id, 'must define "tenant_id" query string param'
