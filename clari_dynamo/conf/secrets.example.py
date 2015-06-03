@@ -11,8 +11,9 @@ import json
 
 os.environ['CLARI_DYNAMO_AWS_KMS_S3_BUCKET_NAME'] = 'x'
 os.environ['CLARI_DYNAMO_AWS_KMS_KEY_ARN_ID']     = 'x'
-os.environ['CLARI_DYNAMO_AUTH_WEB_HOOK']          = 'https://example.com/authed_for?tenant_id=%s'
-# os.environ['CLARI_DYNAMO_BASIC_AUTH_DICT']        = json.dumps({'admin': xxx})
+# os.environ['CLARI_DYNAMO_AUTH_WEB_HOOK']          = 'https://example.com/authed_for?tenant_id=%s'
+os.environ['CLARI_DYNAMO_BASIC_AUTH_USERNAME']    = 'xxxxxxxxxxxxxxxxxxxxxxxxxx'
+os.environ['CLARI_DYNAMO_BASIC_AUTH_PASSWORD']    = 'xxxxxxxxxxxxxxxxxxxxxxxxxx'
 
 ################################################################################
 # Crypto key ###################################################################
