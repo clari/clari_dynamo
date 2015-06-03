@@ -25,10 +25,11 @@ class LocalDb(object):
         logging.info('starting dynamo local...')
         command_args = ['java',
                         '-Djava.library.path=' + DIR + '/DynamoDBLocal_lib',
-                        '-jar', JAR,  '-port', str(port),  '-sharedDb',
-                        '-dbPath', DIR]
+                        '-jar', JAR,  '-port', str(port),  '-sharedDb']
         if in_memory:
-            command_args.append('-inMemory')
+            command_args += ['-inMemory']
+        else:
+            command_args += ['-dbPath', DIR]
         self.process = subprocess.Popen(command_args, cwd=DIR)
         logging.info('dynamo local started')
         self.up = True
