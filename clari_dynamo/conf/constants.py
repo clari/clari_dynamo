@@ -29,7 +29,19 @@ HOME_TEXT = {
             {
                 'url': 'table/%{tableName}',
                 'operations': [
-                    {'PUT': {'bodyFormat': {"column_name": 'columnValue'}}}
+                    {
+                        'PUT': {
+                            'bodyFormat': {
+                                "columnName": {
+                                    '$data': 'columnValue',
+                                    'optional': {
+                                        '$s3': False,
+                                        '$base64': False,
+                                    }
+                                }
+                            }
+                        }
+                    }
                 ],
             }
         ]
