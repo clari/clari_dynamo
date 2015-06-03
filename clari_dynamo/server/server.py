@@ -58,7 +58,7 @@ if not AUTH_WEB_HOOK and BASIC_AUTH_DICT:
     app_config = {
         '/': {
             'tools.auth_basic.on': True,
-            'tools.auth_basic.realm': 'earth',
+            'tools.auth_basic.realm': 'clari_dynamo_' + ENV_NAME.encode('ascii'),
             'tools.auth_basic.checkpassword': check_password,
         },
     }
