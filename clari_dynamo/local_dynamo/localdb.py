@@ -7,7 +7,6 @@ import requests
 
 from clari_dynamo.conf.constants import *
 
-
 URL =  'http://dynamodb-local.s3-website-us-west-2.amazonaws.com/dynamodb_local_latest.zip'
 JAR =  'DynamoDBLocal.jar'
 DIR = os.path.dirname(os.path.abspath(__file__))
@@ -26,7 +25,8 @@ class LocalDb(object):
         logging.info('starting dynamo local...')
         command_args = ['java',
                         '-Djava.library.path=' + DIR + '/DynamoDBLocal_lib',
-                        '-jar', JAR,  '-port', str(port),  '-sharedDb']
+                        '-jar', JAR,  '-port', str(port),  '-sharedDb',
+                        '-dbPath', DIR]
         if in_memory:
             command_args.append('-inMemory')
         self.process = subprocess.Popen(command_args, cwd=DIR)
