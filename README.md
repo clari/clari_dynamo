@@ -13,8 +13,9 @@ A customizable service layer around Amazon's DynamoDB.
 - Automatic up and down scaling with dynamic-dynamodb 
 - S3 option for large fields
 - KMS encryption
-- Custom authentication with the rest of your stack via a callback URL (TODO)
 - Installs and runs dynamo local and local test (in-memory) version
+- Multi-tenant
+- Timestamped created_at for entities
 
 ## Possibilities
 - Easy migration handling (row transformation function - map reduce - AWS lambda - versioning)
