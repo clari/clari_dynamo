@@ -42,6 +42,8 @@ class Server(object):
         for name in cherrypy.request.headers:
             if name.lower().find('auth') == -1:
                 filtered_headers[name] = headers[name]
+            else:
+                headers[name] = '[FILTERED]'  # Don't let anyone else log this.
         logging.info(filtered_headers)
 
     def enforce_https_only(self):
