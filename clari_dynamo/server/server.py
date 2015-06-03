@@ -36,10 +36,19 @@ class Server(object):
             logging.info('creating a new item in ' + name)
         return { 'success': True }
 
+    def log_headers(self):
+        headers = cherrypy.request.headers
+        filtered_headers = {}
+        for name in cherrypy.request.headers:
+            if name.lower().find('auth') == -1:
+                filtered_headers[name] = headers[name]
+        logging.info(filtered_headers)
+
     def enforce_https_only(self):
+        self.log_headers()
         assert (
             cherrypy.request.scheme == 'https' or
-            cherrypy.request.headers['HTTP_X_FORWARDED_PROTO'].lower() == 'https' or
+            cherrypy.request.headers.get('X-Forwarded-Proto', '').lower() == 'https' or
             ENV_NAME == 'dev'
         )
 
