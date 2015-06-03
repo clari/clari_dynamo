@@ -5,12 +5,14 @@ from clari_dynamo.conf.constants import *
 
 import random
 import time
+from datetime import datetime
 import sys
 
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
 sys.path.insert(0, BOTO_PATH)
 
 from boto.dynamodb2.exceptions import ProvisionedThroughputExceededException
+from boto.dynamodb2.exceptions import ConditionalCheckFailedException
 from boto.dynamodb2.layer1 import DynamoDBConnection
 from boto.dynamodb2.table import Table as BotoTable
 from boto.dynamodb.types import Binary
@@ -60,6 +62,7 @@ class ClariDynamo(object):
         isinstance(tenant_id, str)
         item['tenant_id'] = tenant_id
         item['encrypted_tenant_id'] = CRYPTO.encrypt(bytes(tenant_id, 'UTF-8'))
+        item['created_at'] = str(datetime.now())
         self._check_for_meta(item, table, operation='put')
         return self._put_with_retries(table, item, retry=0)
 
@@ -126,15 +129,23 @@ class ClariDynamo(object):
             table.put_item(data)
         except ProvisionedThroughputExceededException as e:
             if RETRY_ON_THROUGHPUT_EXCEEDED and retry < 4:
+                logging.warn(
+                    'ProvisionedThroughputExceededException retrying: ' +
+                    str(retry))
                 time.sleep(2 ** retry * random.random())  # random => ! herd
                 self._put_with_retries(data, table, retry + 1)
             else:
                 raise e
-
+        except ConditionalCheckFailedException as e:
+            raise self.ClariDynamoConditionCheckFailedException(str(e) + ' - ' +
+                'This could be due to a duplicate insertion.')
         # TODO: Handle too large exception by compressing or s3 if non-indexed
         except Exception as e:
             print(e)
             raise e
 
     class AuthException(Exception):
+        pass
+
+    class ClariDynamoConditionCheckFailedException(Exception):
         pass

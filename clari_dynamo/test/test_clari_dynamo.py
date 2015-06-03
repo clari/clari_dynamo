@@ -64,12 +64,14 @@ class ClariDynamoTest(unittest.TestCase):
 
         base64_data = 'AA'
         tenant_id = '123'
-        db.put_item(table, tenant_id, {
+        item = {
             'id': self._testMethodName,
             'binaryTest': {
                 '$data': base64_data,
                 '$base64': True
-            }})
+            }
+        }
+        db.put_item(table, item, tenant_id)
 
         retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
         self.assertEquals(retrieved['binaryTest'], base64_data)
@@ -108,6 +110,29 @@ class ClariDynamoTest(unittest.TestCase):
         db.put_item(table, item, tenant_id)
         retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
         self.assertEquals(retrieved['details']['$data'], details)
+        db.delete_item(table, retrieved)
+        db.drop_table(self._testMethodName)
+
+    def test_duplicate_error(self):
+        db = self.db
+        table = self.create_test_table(self._testMethodName)
+        details = 'unique data'
+        item = {
+            'id': self._testMethodName,
+            'details': {
+                '$data': details,
+            }
+        }
+        tenant_id = '123'
+        db.put_item(table, item, tenant_id)
+        did_raise_exception = False
+        try:
+            db.put_item(table, item, tenant_id)
+        except Exception as e:
+            did_raise_exception = True
+            assert e.message.lower().find('duplicate') != -1
+        assert did_raise_exception
+        retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
         db.delete_item(table, retrieved)
         db.drop_table(self._testMethodName)
 
