@@ -32,7 +32,7 @@ class Server(object):
         if cherrypy.request.method in ['PUT', 'POST']:
             data = cherrypy.request.json
             table = Table(name)
-            self.db.put_item(table, data)
+            self.db.put_item(table, data, tenant_id)
             logging.info('creating a new item in ' + name)
         return { 'success': True }
 
