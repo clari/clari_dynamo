@@ -34,3 +34,7 @@ A customizable service layer around Amazon's DynamoDB.
 - Everything is Python3 ready except for dynamic-dynamodb which could be split
   if worker machines are on different versions of Python. 
   
+  
+## TODO
+[ ] Use IAM credentials in non-dev environments instead of basic auth
+[ ] Kill local dynamo if still exists through a pidfile when starting localhost 
