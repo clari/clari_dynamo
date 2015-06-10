@@ -27,14 +27,30 @@ class Server(object):
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
-    def table(self, name, tenant_id=None, purpose=None):
-        self.validate_request(purpose, tenant_id)
-        if cherrypy.request.method in ['PUT', 'POST']:
+    def put_item(self, table=None, tenant=None, purpose=None):
+        if not cherrypy.request.method in ['PUT', 'POST']:
+            raise cherrypy.HTTPError(400, 'Please send a PUT/POST request')
+        else:
+            self.validate_request(table=table, tenant=tenant, purpose=purpose)
             data = cherrypy.request.json
-            table = Table(name)
-            self.db.put_item(table, data, tenant_id)
-            logging.info('creating a new item in ' + name)
-        return { 'success': True }
+            _table = Table(table)
+            self.db.put_item(_table, data, tenant)
+            logging.info('creating a new item in ' + table)
+            return { 'success': True }
+
+    @cherrypy.expose
+    @cherrypy.tools.json_out()
+    def get_item(self, table=None, tenant=None, purpose=None, query=None):
+        if not cherrypy.request.method == 'GET':
+            raise cherrypy.HTTPError(400, 'Please send a GET request')
+        else:
+            self.validate_request(table=table, tenant=tenant,
+                                  purpose=purpose, query=query)
+            id_query = json.loads(query)
+            _table = Table(table)
+            ret = self.db.get_item(_table, tenant, **id_query)
+            logging.info('fetched item ' + table)
+            return str(ret)
 
     def log_headers(self):
         headers = cherrypy.request.headers
@@ -48,17 +64,25 @@ class Server(object):
 
     def enforce_https_only(self):
         self.log_headers()
+        req = cherrypy.request
         assert (
-            cherrypy.request.scheme == 'https' or
-            cherrypy.request.headers.get('X-Forwarded-Proto', '').lower() == 'https' or
+            req.scheme.lower() == 'https' or
+            req.headers.get('X-Forwarded-Proto', '').lower() == 'https' or
             ENV_NAME == 'dev'
         )
 
-    def validate_request(self, purpose, tenant_id):
-        assert tenant_id, 'must define "tenant_id" query string param'
-        assert purpose, 'must define "purpose" query string param'
+    def validate_request(self, **kwargs):
+        for arg in kwargs:
+            assert kwargs[arg], ('must define "%s" query string param' % arg)
         self.enforce_https_only()
         auth.check(cherrypy)
+
+
+def handle_error(**kwargs):
+    msg = "Smokey bananas, something's off. Check the logs..."
+    cherrypy.response.body = [msg]
+    return msg
+
 
 cherrypy.config.update({
     'server.socket_host':       '0.0.0.0',  # Trust your Wi-Fi?
@@ -67,6 +91,15 @@ cherrypy.config.update({
     'server.socket_queue_size': 200,  # Number of requests that can wait for a thread
     'server.socket_timeout':    20,
 })
+
+if HIDE_ERRORS:
+    # Don't return error messages in response for 500's
+    cherrypy.config.update({'request.error_response':   handle_error})
+
+    # Don't return error messages in response for 400's
+    for i in range(100):
+        cherrypy.config.update({'error_page.' + str(400 + i): handle_error})
+
 
 if not AUTH_WEB_HOOK and BASIC_AUTH_DICT:
     check_password = cherrypy.lib.auth_basic.checkpassword_dict(BASIC_AUTH_DICT)
