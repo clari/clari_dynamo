@@ -31,7 +31,7 @@ A customizable service layer around Amazon's DynamoDB.
 - `pip install -r requirements.txt && cd dynamo-local && python run.py`
 
 ## Python 3
-- Everything is Python3 ready except for dynamic-dynamodb which could be split
+- Everything is Python3 ready except for dynamic-dynamodb which can be split
   if worker machines are on different versions of Python. 
   
   
