@@ -52,6 +52,7 @@ class ClariDynamo(object):
 
     def get_item(self, table, tenant_id, **id_query):
         item = table.get_item(**id_query)
+        assert item['tenant_id'] == tenant_id
         assert item['tenant_id'] == CRYPTO.decrypt(bytes(
             item['encrypted_tenant_id'], 'UTF-8'))
         self._check_for_meta(item._data, table, operation='get')
@@ -59,7 +60,7 @@ class ClariDynamo(object):
 
     def put_item(self, table, item, tenant_id):
         assert type(item) == dict
-        isinstance(tenant_id, str)
+        assert isinstance(tenant_id, str)
         item['tenant_id'] = tenant_id
         item['encrypted_tenant_id'] = CRYPTO.encrypt(bytes(tenant_id, 'UTF-8'))
         item['created_at'] = str(datetime.now())
@@ -129,6 +130,9 @@ class ClariDynamo(object):
             table.put_item(data)
         except ProvisionedThroughputExceededException as e:
             if RETRY_ON_THROUGHPUT_EXCEEDED and retry < 4:
+                self.conn.update_table(provisioned_throughput={
+                    'read': table.throughput['read'],
+                    'write': table.throughput['write'] * 2})
                 logging.warn(
                     'ProvisionedThroughputExceededException retrying: ' +
                     str(retry))
