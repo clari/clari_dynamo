@@ -33,8 +33,7 @@ class Server(object):
         else:
             self.validate_request(table=table, tenant=tenant, purpose=purpose)
             data = cherrypy.request.json
-            _table = Table(table)
-            self.db.put_item(_table, data, tenant)
+            self.db.put_item(table, data, tenant)
             logging.info('creating a new item in ' + table)
             return { 'success': True }
 
@@ -47,8 +46,7 @@ class Server(object):
             self.validate_request(table=table, tenant=tenant,
                                   purpose=purpose, query=query)
             id_query = json.loads(query)
-            _table = Table(table)
-            ret = self.db.get_item(_table, tenant, **id_query)
+            ret = self.db.get_item(table, tenant, **id_query)
             logging.info('fetched item ' + table)
             return str(ret)
 
