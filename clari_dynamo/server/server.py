@@ -65,7 +65,7 @@ class Server(object):
         req = cherrypy.request
         assert (
             req.scheme.lower() == 'https' or
-            req.headers.get('X-Forwarded-Proto', '').lower() == 'https' or
+            req.headers.get('X-Forwarded-Proto', '').lower() == 'https' or # Heroku / ELB
             ENV_NAME == 'dev'
         )
 
