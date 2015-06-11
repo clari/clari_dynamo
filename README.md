@@ -12,9 +12,10 @@ A customizable service layer around Amazon's DynamoDB.
 - Deployable instantly on Heroku
 - Automatic up and down scaling with dynamic-dynamodb 
 - S3 option for large fields
-- KMS encryption
+- KMS encryption (no one sees key)
 - Installs and runs dynamo local and local test (in-memory) version
 - Multi-tenant
+- Multi-environment
 - Timestamped created_at for entities
 
 ## Possibilities
