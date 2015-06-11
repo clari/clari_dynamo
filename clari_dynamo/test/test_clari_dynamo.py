@@ -5,12 +5,11 @@ from builtins import (bytes, str, open, super, range, zip, round, input, int, po
 import os
 import sys
 
+os.environ['CLARI_DYNAMO_IS_TEST'] = 'True'
 from clari_dynamo.conf.constants import *
 
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
 sys.path.insert(0, BOTO_PATH)
-
-os.environ['CLARI_DYNAMO_TEST'] = 'True'
 
 from clari_dynamo.clari_dynamo import ClariDynamo
 from boto.dynamodb2.fields import HashKey, RangeKey, KeysOnlyIndex, GlobalAllIndex
@@ -59,82 +58,76 @@ class ClariDynamoTest(unittest.TestCase):
         self.assertTrue(did_raise_exception, 'Should fail authorization')
 
     def test_binary_input(self):
-        db = self.db
-        table = self.create_test_table(self._testMethodName)
-
-        base64_data = 'AA'
-        tenant_id = '123'
+        db, table_name = self.setup_stuff()
+        expected = 'AA'
         item = {
             'id': self._testMethodName,
-            'binaryTest': {
-                '$data': base64_data,
+            'expected': {
+                '$data': expected,
                 '$base64': True
             }
         }
-        db.put_item(table, item, tenant_id)
+        self.put_and_assert(db, expected, item, table_name)
 
-        retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
-        self.assertEquals(retrieved['binaryTest'], base64_data)
-        db.drop_table(self._testMethodName)
+    def setup_stuff(self):
+        db = self.db
+        table_name = self._testMethodName
+        self.create_test_table(table_name)
+        return db, table_name
 
     def test4_s3_kms_data(self):
-        db = self.db
-        table = self.create_test_table(self._testMethodName)
-        details = 'awesome data'
+        expected = 'awesome data'
+        db, table_name = self.setup_stuff()
         item = {
             'id': self._testMethodName,
-            'details': {
-                '$data': details,
+            'expected': {
+                '$data': expected,
                 '$s3': True,
             }
         }
-        tenant_id = '123'
-        db.put_item(table, item, tenant_id)
-        retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
-        self.assertEquals(retrieved['details']['$data'], details)
-        db.delete_item(table, retrieved)
-        db.drop_table(self._testMethodName)
+        self.put_and_assert(db, expected, item, table_name)
 
     def test_tenant_id_protection(self):
-        db = self.db
-        table = self.create_test_table(self._testMethodName)
-        details = 'tenant data'
+        db, table_name = self.setup_stuff()
+        expected = 'tenant data'
         item = {
             'id': self._testMethodName,
-            'details': {
-                '$data': details,
+            'expected': {
+                '$data': expected,
 
             }
         }
-        tenant_id = '123'
-        db.put_item(table, item, tenant_id)
-        retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
-        self.assertEquals(retrieved['details']['$data'], details)
-        db.delete_item(table, retrieved)
-        db.drop_table(self._testMethodName)
+        self.put_and_assert(db, expected, item, table_name)
 
     def test_duplicate_error(self):
-        db = self.db
-        table = self.create_test_table(self._testMethodName)
-        details = 'unique data'
+        db, table_name = self.setup_stuff()
+        expected = 'unique data'
         item = {
             'id': self._testMethodName,
-            'details': {
-                '$data': details,
+            'expected': {
+                '$data': expected,
             }
         }
         tenant_id = '123'
-        db.put_item(table, item, tenant_id)
+        db.put_item(table_name, item, tenant_id)
         did_raise_exception = False
         try:
-            db.put_item(table, item, tenant_id)
-        except Exception as e:
+            db.put_item(table_name, item, tenant_id)
+        except ClariDynamo.ClariDynamoConditionCheckFailedException as e:
             did_raise_exception = True
             assert e.message.lower().find('duplicate') != -1
         assert did_raise_exception
-        retrieved = db.get_item(table, tenant_id, id=self._testMethodName)
-        db.delete_item(table, retrieved)
-        db.drop_table(self._testMethodName)
+        retrieved = db.get_item(table_name, tenant_id, id=self._testMethodName)
+        db.delete_item(table_name, retrieved)
+        db.drop_table(table_name)
+
+    def put_and_assert(self, db, expected, item, table_name):
+        tenant_id = '123'
+        db.put_item(table_name, item, tenant_id)
+        retrieved = db.get_item(table_name, tenant_id, id=self._testMethodName)
+        self.assertEquals(retrieved['expected'], expected)
+        db.delete_item(table_name, retrieved)
+        db.drop_table(table_name)
 
     def create_test_table(self, name):
         return self.db.create_table(name,
