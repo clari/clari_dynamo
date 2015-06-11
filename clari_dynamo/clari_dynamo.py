@@ -50,7 +50,8 @@ class ClariDynamo(object):
             port                  = port,
             is_secure             = is_secure)
 
-    def get_item(self, table, tenant_id, **id_query):
+    def get_item(self, table_name, tenant_id, **id_query):
+        table = self.get_table(table_name)
         item = table.get_item(**id_query)
         assert item['tenant_id'] == tenant_id
         assert item['tenant_id'] == CRYPTO.decrypt(bytes(
@@ -58,7 +59,8 @@ class ClariDynamo(object):
         self._check_for_meta(item._data, table, operation='get')
         return item
 
-    def put_item(self, table, item, tenant_id):
+    def put_item(self, table_name, item, tenant_id):
+        table = self.get_table(table_name)
         assert type(item) == dict
         assert isinstance(tenant_id, str)
         item['tenant_id'] = tenant_id
@@ -67,20 +69,26 @@ class ClariDynamo(object):
         self._check_for_meta(item, table, operation='put')
         return self._put_with_retries(table, item, retry=0)
 
-    def delete_item(self, table, item):
+    def delete_item(self, table_name, item):
+        table = self.get_table(table_name)
         data = item._data
         assert type(data) == dict
         self._check_for_meta(data, table, operation='delete')
         item.delete()
 
     def create_table(self, name, **kwargs):
-        return BotoTable.create(name, connection=self.conn, **kwargs)
+        return BotoTable.create(self.get_table_name(name),
+                                connection=self.conn, **kwargs)
 
     def drop_table(self, name):
-        return self.conn.delete_table(name)
+        return self.conn.delete_table(self.get_table_name(name))
 
     def get_table(self, name, **kwargs):
-        return BotoTable(name, connection=self.conn, **kwargs)
+        return BotoTable(self.get_table_name(name),
+                         connection=self.conn, **kwargs)
+
+    def get_table_name(self, name):
+        return ENV_NAME + '_' + name
 
     def stop_local(self):
         if not self.is_remote:
@@ -88,7 +96,7 @@ class ClariDynamo(object):
 
     def _handle_s3_backed_item(self, table, operation, parent, key, value):
         if operation == 'get':
-            value['$data'] = s3_kms.get(value["$s3_key"])
+            parent[key] = s3_kms.get(value["$s3_key"])
         elif operation == 'put':
             s3_key = s3_kms.put(table.table_name, key, value['$data'])
             value['$s3_key'] = s3_key.key
@@ -96,7 +104,7 @@ class ClariDynamo(object):
         elif operation == 'delete':
             s3_kms.delete(value["$s3_key"])
 
-    def _handle_base64_item(self, table, operation, parent, key, value):
+    def _handle_base64_item(self, operation, parent, key, value):
         if operation == 'get':
             pass
         elif operation == 'put':
@@ -118,10 +126,11 @@ class ClariDynamo(object):
             if type(value) == dict:
                 # Read meta info
                 if value.get("$s3"):
-                    self._handle_s3_backed_item(table, operation, item, key,
-                                                value)
+                    self._handle_s3_backed_item(table, operation, item, key, value)
                 if value.get('$base64'):
-                    self._handle_base64_item(table, operation, item, key, value)
+                    self._handle_base64_item(operation, item, key, value)
+                if value.get('$data'):
+                    item[key] = value.get('$data')
             if type(value) in (dict, list):
                 self._check_for_meta(value, table, operation)
 
