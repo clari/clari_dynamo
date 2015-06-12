@@ -7,6 +7,7 @@ import random
 import time
 from datetime import datetime
 import sys
+import traceback
 
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
 sys.path.insert(0, BOTO_PATH)
@@ -148,14 +149,12 @@ class ClariDynamo(object):
                 time.sleep(2 ** retry * random.random())  # random => ! herd
                 self._put_with_retries(data, table, retry + 1)
             else:
-                raise e
+                exc_info = sys.exc_info()
+                raise exc_info[0], exc_info[1], exc_info[2]
+
         except ConditionalCheckFailedException as e:
             raise self.ClariDynamoConditionCheckFailedException(str(e) + ' - ' +
                 'This could be due to a duplicate insertion.')
-        # TODO: Handle too large exception by compressing or s3 if non-indexed
-        except Exception as e:
-            print(e)
-            raise e
 
     class AuthException(Exception):
         pass
