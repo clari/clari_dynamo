@@ -10,13 +10,14 @@ sys.path.insert(0, BOTO_PATH)
 import cherrypy
 from boto.dynamodb2.table import Table
 from clari_dynamo.clari_dynamo import ClariDynamo
-import auth
+from clari_dynamo.migrate.run_migrations import migrate
+from clari_dynamo.server import auth
 
 
 class Server(object):
     def __init__(self, _db):
         self.db = _db
-        self.db.create_tables()
+        migrate(self.db, MIGRATIONS_DIRECTORY)
 
     @cherrypy.expose
     @cherrypy.tools.json_in()

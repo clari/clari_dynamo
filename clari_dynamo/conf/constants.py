@@ -9,7 +9,9 @@ from cryptography.fernet import Fernet
 from clari_dynamo.conf.cd_logger import logging
 from clari_dynamo.utils import env
 
-if os.path.isfile(os.path.dirname(os.path.abspath(__file__)) + '/secrets.py'):
+DIR = os.path.dirname(os.path.abspath(__file__))
+
+if os.path.isfile(DIR + '/secrets.py'):
     import clari_dynamo.conf.secrets
 else:
     print('No secrets.py found, request access, set the variables documented in '
@@ -46,6 +48,7 @@ HOME_TEXT = {
         ]
     }
 }
+MIGRATIONS_DIRECTORY = os.path.realpath(DIR + '/../../migrations')
 
 AWS_KMS_S3_BUCKET_NAME    = env('AWS_KMS_S3_BUCKET_NAME')
 AWS_KMS_KEY_ARN_ID        = env('AWS_KMS_KEY_ARN_ID')
