@@ -40,7 +40,7 @@ class ClariDynamo(object):
         self.is_remote = is_remote
         self.in_memory = in_memory
         kwargs = {
-            'aws_access_key_id':     aws_access_key,
+            'aws_access_key':        aws_access_key,
             'aws_secret_access_key': aws_secret_access_key,
             'is_secure':             is_secure
         }
@@ -49,9 +49,7 @@ class ClariDynamo(object):
             kwargs['port'] = port
             self.local_db = LocalDb(port, in_memory)
 
-        self.connection = self._create_dynamo_connection(aws_access_key,
-                                               aws_secret_access_key, host,
-                                               is_secure, port)
+        self.connection = self._create_dynamo_connection(**kwargs)
 
     @item_op
     def query(self, table_name, purpose, tenant_id, **query):
