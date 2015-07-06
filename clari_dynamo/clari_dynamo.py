@@ -40,7 +40,7 @@ class ClariDynamo(object):
         self.is_remote = is_remote
         self.in_memory = in_memory
         kwargs = {
-            'aws_access_key':        aws_access_key,
+            'aws_access_key_id':        aws_access_key,
             'aws_secret_access_key': aws_secret_access_key,
             'is_secure':             is_secure
         }
@@ -49,7 +49,7 @@ class ClariDynamo(object):
             kwargs['port'] = port
             self.local_db = LocalDb(port, in_memory)
 
-        self.connection = self._create_dynamo_connection(**kwargs)
+        self.connection = DynamoDBConnection(**kwargs)
 
     @item_op
     def query(self, table_name, purpose, tenant_id, **query):
@@ -275,15 +275,6 @@ class ClariDynamo(object):
         time_to_sleep = sleep_coeff * 2 ** retry * random.random()
         logging.info('sleeping for %f seconds' % time_to_sleep)
         time.sleep(time_to_sleep)
-
-    def _create_dynamo_connection(self, aws_access_key, aws_secret_access_key, host,
-                              is_secure, port):
-        return DynamoDBConnection(
-            aws_access_key_id=aws_access_key,
-            aws_secret_access_key=aws_secret_access_key,
-            host=host,
-            port=port,
-            is_secure=is_secure)
 
     class AuthException(Exception):
         pass
