@@ -16,13 +16,17 @@ import auth
 class Server(object):
     def __init__(self, _db):
         self.db = _db
+        self.db.create_tables()
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
     def index(self):
         self.enforce_https_only()
-        return HOME_TEXT
+        ret = HOME_TEXT
+        ret['clari_dynamo']['tables'] = self.db.list_tables()
+        return ret
+
 
     @cherrypy.expose
     @cherrypy.tools.json_in()
@@ -33,7 +37,7 @@ class Server(object):
         else:
             self.validate_request(table=table, tenant=tenant, purpose=purpose)
             data = cherrypy.request.json
-            self.db.put_item(table, data, tenant)
+            self.db.put_item(table, data, tenant, purpose)
             logging.info('creating a new item in ' + table)
             return { 'success': True }
 
@@ -46,7 +50,7 @@ class Server(object):
             self.validate_request(table=table, tenant=tenant,
                                   purpose=purpose, query=query)
             id_query = json.loads(query)
-            ret = self.db.get_item(table, tenant, **id_query)
+            ret = self.db.get_item(table, tenant, purpose, **id_query)
             logging.info('fetched item ' + table)
             return str(ret)
 

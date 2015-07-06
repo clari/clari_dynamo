@@ -61,3 +61,4 @@ clari_dynamo/conf/secrets.py
 clari_dynamo/local_dynamo/shared-local-instance.db
 kruft
 tables
+migrations/*

@@ -1,41 +1,47 @@
-**Everything in this repo should be open-sourceable and general to DynamoDB.
-This allows for a clean separation of concerns between business-logic and
-a scalable data layer.**
-
-# Clari dynamo
-A customizable service layer around Amazon's DynamoDB.
- 
-## Setup
-`cp conf/secrets.example.py conf/secrets.py` and setup your secrets
+# Clari dynamo - DynamoDB with a cherry on top 
+Several high level features 
+added to DynamoDB via a customizable service layer
+hosted with Cherrypy.
 
 ## Features
-- Deployable instantly on Heroku
-- Automatic up and down scaling with dynamic-dynamodb 
-- S3 option for large fields
-- KMS encryption (no one sees key)
-- Installs and runs dynamo local and local test (in-memory) version
+- Autoscales per request and in background based on QPS via dynamic-dynamodb
+- Automatic schema migrations
 - Multi-tenant
 - Multi-environment
-- Timestamped created_at for entities
-
-## Possibilities
-- Easy migration handling (row transformation function - map reduce - AWS lambda - versioning)
-- Replicate to Redshift/Aurora for analytics querying
-- Push for real time updates
-- Immutable tables (full record history)
-- Copy on write QA connections
-- Much more!
+- S3 fields for large objects (encrypted with KMS)
+- Installs and runs dynamo local automatically
+- Easy, fast test environments with in-memory DB
+- Each operation tracked, timed, and logged with app-level purpose
+- Timestamped `created_at` and `updated_at` for all entities
+- Deploy right now on Heroku - TODO: Add Heroku button
 
 ## Setup
 - Get anaconda python 2.7
 - Java 6+ for DynamoDB local
 - `pip install -r requirements.txt && cd dynamo-local && python run.py`
+- `cp conf/secrets.example.py conf/secrets.py` and setup your secrets
+
+## Migrations - zero downtime
+- Add new with `python new_migration.py`
+- Runs at server start (TODO: in background)
+- Retries failed migrations on restart
 
 ## Python 3
-- Everything is Python3 ready except for dynamic-dynamodb which can be split
-  if worker machines are on different versions of Python. 
-  
+- Everything is Python3 ready except for dynamic-dynamodb which is on a separate
+  worker container
   
 ## TODO
+[ ] Run migrations in background
+[ ] S3 backups
 [ ] Use IAM credentials in non-dev environments instead of basic auth
-[ ] Kill local dynamo if still exists through a pidfile when starting localhost 
+[ ] Queries, scans, and underlying paging ability.
+[ ] Java Client
+[ ] Datadog API hook
+
+## Possibilities
+- Instant transformations - map, filter, join, split, move, etc...
+- Spark accelerated migrations and transformations  
+- Web UI
+- Replicate to Redshift/Aurora for analytics querying
+- Topic subscriptions
+- Copy on write QA environment

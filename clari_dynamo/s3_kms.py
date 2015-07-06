@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function, unicode_literals
 from builtins import (bytes, str, open, super, range, zip, round, input, int, pow, object)
+from clari_dynamo.conf.constants import *
 
 from clari_dynamo import utils
-from clari_dynamo.conf.constants import *
+
 
 from boto.s3.connection import S3Connection
 from boto.s3.key import Key
@@ -16,7 +17,7 @@ BUCKET = CONNECTION.get_bucket(AWS_KMS_S3_BUCKET_NAME)
 
 def put(table_name, item_name, data):
     file_name = '{0:s}.{1:s}.{2:s}'.format(table_name, item_name,
-                                           utils.get_a_uuid())
+                                           utils.quick_random_str(6))
     key = Key(BUCKET)
     key.key = file_name
     key.set_contents_from_string(data, headers=get_kms_headers())
