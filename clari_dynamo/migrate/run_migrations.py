@@ -112,7 +112,7 @@ def obtain_migration_lock(db):
                     purpose='obtain migration lock',
                     overwrite=True,
                     condition=META_VALUE_NAME + " = :status",
-                    vars={':status': NO_STATUS})
+                    vars={':status': {'S': NO_STATUS}})
     except ClariDynamo.ClariDynamoConditionCheckFailedException as e:
         logging.info('Could not get migration lock, other process running.')
         return False
