@@ -41,7 +41,7 @@ class ClariDynamo(object):
         self.is_remote = is_remote
         self.in_memory = in_memory
         kwargs = {
-            'aws_access_key_id':        aws_access_key,
+            'aws_access_key_id':     aws_access_key,
             'aws_secret_access_key': aws_secret_access_key,
             'is_secure':             is_secure
         }
@@ -105,7 +105,7 @@ class ClariDynamo(object):
     def create_table(self, table_name, **kwargs):
         """
         N.B. This is a synchronous operation. Not to be called from a
-        web request. Use migrations instead.
+        web request. Use migrations framework instead for creating tables.
         """
         ret = BotoTable.create(self._get_table_name(table_name),
                 connection=self.connection, **kwargs)
