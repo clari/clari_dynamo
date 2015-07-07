@@ -8,6 +8,7 @@ import time
 from datetime import datetime
 import sys
 import traceback
+from time import sleep
 
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
 sys.path.insert(0, BOTO_PATH)
