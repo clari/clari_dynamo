@@ -102,8 +102,23 @@ class ClariDynamo(object):
 
     @table_op
     def create_table(self, table_name, **kwargs):
-        return BotoTable.create(self._get_table_name(table_name),
-                                connection=self.connection, **kwargs)
+        """
+        N.B. This is a synchronous operation. Not to be called from a
+        web request. Use migrations instead.
+        """
+        ret = BotoTable.create(self._get_table_name(table_name),
+                connection=self.connection, **kwargs)
+
+        while self.get_table_status(table_name) != 'ACTIVE':
+            logging.info('Waiting for table to finish creating')
+            sleep(1)
+
+        return ret
+
+    def get_table_status(self, table_name):
+        table = self.get_table(table_name)
+        status = table.clari_description['Table']['TableStatus']
+        return status
 
     @table_op
     def drop_table(self, table_name):
