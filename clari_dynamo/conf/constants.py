@@ -36,8 +36,8 @@ HOME_TEXT = {
                                 "columnName": {
                                     '$data': 'columnValue',
                                     'optional': {
-                                        '$s3': False,
-                                        '$base64': False,
+                                        '$s3': 'bool',
+                                        '$base64': 'bool',
                                     }
                                 }
                             }
@@ -56,6 +56,7 @@ AWS_ACCESS_KEY_ID         = env('AWS_ACCESS_KEY_ID'        , default='local_dyna
 AWS_SECRET_ACCESS_KEY     = env('AWS_SECRET_ACCESS_KEY'    , default='local_secret')
 IS_REMOTE                 = env('IS_REMOTE'                , default=False)
 IS_TEST                   = env('IS_TEST'                  , default=False)
+TEST_REMOTE               = env('TEST_REMOTE'              , default=False)
 ENV_NAME                  = env('ENV_NAME'                 , default=('test' if IS_TEST else 'dev'))
 CRYPTO_KEY                = env('CRYPTO_KEY'               , default=None)
 AUTH_WEB_HOOK             = env('AUTH_WEB_HOOK'            , default=None)

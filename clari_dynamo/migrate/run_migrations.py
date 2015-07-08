@@ -10,7 +10,7 @@ from clari_dynamo.migrate.common_imports import *
 from clari_dynamo.clari_dynamo import ClariDynamo
 from clari_dynamo.conf.cd_logger import logging
 
-TABLE_NAME = '_schema_migrations'
+MIGRATIONS_TABLE_NAME = '_schema_migrations'
 
 # TODO: Move meta table stuff to its own class
 META_TABLE_NAME = '_meta'
@@ -25,7 +25,7 @@ YES_STATUS = 'yes'
 
 
 def get_finished_migrations(db):
-    result = db.query(TABLE_NAME,
+    result = db.query(MIGRATIONS_TABLE_NAME,
                     purpose='get finished migrations',
                     tenant_id=SUPER_TENANT_ID,
                     migration_key__eq=HASH_KEY,
@@ -50,8 +50,9 @@ def get_migrations_to_run(db, migrations_dir):
 
 def mark_migration_done(db, migration_name):
     # We want to do one bulk query for all migrations, so giving them
-    # the same hash key. Should be only hundreds to thousands of these.
-    db.put_item(TABLE_NAME, item={
+    # the same hash key. Should be only hundreds to thousands of these,
+    # so they should fit on one shard.
+    db.put_item(MIGRATIONS_TABLE_NAME, item={
         'migration_key' : HASH_KEY,
         'migration_name': migration_name
     }, tenant_id=SUPER_TENANT_ID, purpose='ran migration')
@@ -59,7 +60,7 @@ def mark_migration_done(db, migration_name):
 
 def handle_failed_migration(db, exc_info):
     logging.error('Aborting migrations - '
-                  ' %s failed with: %s %s %s',
+                  'Failed with: %s %s %s',
                   exc_info[0], exc_info[1], exc_info[2])
     if ALLOW_RETRYING_MIGRATIONS:
         release_migration_lock(db)
@@ -130,8 +131,8 @@ def release_migration_lock(db):
 
 
 def ensure_schema_migrations_tables(db):
-    if not db.has_table(TABLE_NAME):
-        db.create_table(TABLE_NAME,
+    if not db.has_table(MIGRATIONS_TABLE_NAME):
+        db.create_table(MIGRATIONS_TABLE_NAME,
                         schema=[HashKey ('migration_key'),
                                 RangeKey('migration_name')],
                         throughput={'read':  10, 'write':  5},)

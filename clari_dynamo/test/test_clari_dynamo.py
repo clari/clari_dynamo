@@ -4,6 +4,7 @@ from builtins import (bytes, str, open, super, range, zip, round, input, int, po
 
 import os
 import sys
+os.environ['CLARI_DYNAMO_IS_TEST'] = 'True'
 
 from clari_dynamo.conf.constants import *
 
@@ -24,14 +25,6 @@ from clari_dynamo.conf.cd_logger import logging
 
 
 class ClariDynamoTest(unittest.TestCase):
-    @classmethod
-    def setUpClass(cls):
-        cls.db = TestDB.get()
-
-    @classmethod
-    def tearDownClass(cls):
-        TestDB.release()
-
     def setup_stuff(self):
         db = self.db
         table_name = self._testMethodName
@@ -116,7 +109,6 @@ class ClariDynamoTest(unittest.TestCase):
         self.assertTrue(did_raise_exception)
         retrieved = db.get_item(table_name, tenant_id, purpose, id=test_name)
         db.delete_item(table_name, retrieved, tenant_id, purpose)
-        db.drop_table(table_name)
 
     def test_successful_throttled_operation(self):
         try_msg = 'trying'
@@ -141,6 +133,10 @@ class ClariDynamoTest(unittest.TestCase):
         self.assertGreater(self._test_exceeded_throttled_operation_attempts, 0,
                            'Should have retried at least once')
 
+        self.db.wait_for_table_to_become_active(
+            self.db.get_table(self._testMethodName), self._testMethodName)
+        pass
+
     def test_change_throughput_error(self):
         db, table_name = self.setup_stuff()
         boto_table = db.get_table(table_name)
@@ -150,6 +146,7 @@ class ClariDynamoTest(unittest.TestCase):
         db._handle_throughput_exceeded(
             get_double_reads(boto_table), 0,
             boto_table)
+        db.wait_for_table_to_become_active(boto_table, table_name)
 
     def test_list_tables(self):
         db, table_name = self.setup_stuff()
@@ -180,9 +177,21 @@ class ClariDynamoTest(unittest.TestCase):
                                 id=test_name)
         self.assertEquals(retrieved['expected'], expected)
         db.delete_item(table_name, retrieved, tenant_id, purpose=test_name)
-        db.drop_table(table_name)
 
     def create_test_table(self, name):
         return self.db.create_table(name,
             schema=[HashKey('id')],
-            throughput={'read':  50, 'write':  50})
+            throughput={'read':  10, 'write':  5})
+
+    def tearDown(self):
+        if self.db.has_table(self._testMethodName):
+            self.db.drop_table(self._testMethodName)
+
+    @classmethod
+    def setUpClass(cls):
+        # sets self.db in methods
+        cls.db = TestDB.get()
+
+    @classmethod
+    def tearDownClass(cls):
+        TestDB.release()

@@ -101,6 +101,11 @@ class ClariDynamo(object):
         self._check_for_meta(data, boto_table, operation='delete')
         item.delete()
 
+    def wait_for_table_to_become_active(self, boto_table, table_name):
+        while self.get_table_status(boto_table) != 'ACTIVE':
+            logging.info('Waiting for table to finish creating')
+            sleep(1)
+
     @table_op
     def create_table(self, table_name, **kwargs):
         """
@@ -110,15 +115,14 @@ class ClariDynamo(object):
         ret = BotoTable.create(self._get_table_name(table_name),
                 connection=self.connection, **kwargs)
 
-        while self.get_table_status(table_name) != 'ACTIVE':
-            logging.info('Waiting for table to finish creating')
-            sleep(1)
+        self.wait_for_table_to_become_active(ret, table_name)
 
         return ret
 
-    def get_table_status(self, table_name):
-        table = self.get_table(table_name)
-        status = table.clari_description['Table']['TableStatus']
+    @table_op
+    def get_table_status(self, boto_table):
+        description = boto_table.describe()
+        status = description['Table']['TableStatus']
         return status
 
     @table_op
@@ -153,7 +157,16 @@ class ClariDynamo(object):
         table_names = self.connection.list_tables()['TableNames']
         table_data = {}
         for table_name in table_names:
-            table_data[table_name] = self.connection.describe_table(table_name)['Table']
+            try:
+                description = self.connection.describe_table(table_name)['Table']
+            except Exception as e:
+                if e.error_code.find('ResourceNotFoundException') >= 0:
+                    logging.warn('Table ' + table_name +
+                                 ' was just deleted, cannot describe.')
+                else:
+                    raise e
+            else:
+                table_data[table_name] = description
         return table_data
 
     @table_op
@@ -259,8 +272,14 @@ class ClariDynamo(object):
         return ret
 
     def _get_secs_since_increase(self, boto_table):
-        last_modified = datetime.fromtimestamp(boto_table.clari_description['Table']
-            ['ProvisionedThroughput']['LastIncreaseDateTime'])
+        default_timestamp = 0.0
+        timestamp = (boto_table.clari_description['Table']
+            ['ProvisionedThroughput'].get('LastIncreaseDateTime',
+                                          default_timestamp))
+        if timestamp == default_timestamp:
+            logging.warn('Unable to determine LastIncreaseDateTime for table')
+
+        last_modified = datetime.fromtimestamp(timestamp)
         secs_since_increase = (datetime.now() - last_modified).total_seconds()
         return secs_since_increase
 
@@ -271,12 +290,15 @@ class ClariDynamo(object):
         if retry == 0:
             # Only increase throughput on first retry for this request.
             # assert False
-            # TODO: Create our own last_increase_time in meta
+            # TODO: Create our own last_increase_time in meta unless AWS fixes
+            # their ProvisionedThroughputDescription response.
             # TODO: See if throughput increased.
             secs_since_increase = self._get_secs_since_increase(boto_table)
             if secs_since_increase > 5:
-                self._change_throughput(new_throughput, boto_table,
-                                        boto_table.table_name)
+                if self.get_table_status(boto_table) != 'UPDATING':
+                    # Avoid piling on throughput from several requests
+                    self._change_throughput(new_throughput, boto_table,
+                                            boto_table.table_name)
 
         self._exponential_splay(retry)
 

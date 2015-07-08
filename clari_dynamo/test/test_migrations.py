@@ -5,6 +5,7 @@ from builtins import (bytes, str, open, super, range, zip, round, input, int, po
 
 import os
 import unittest
+os.environ['CLARI_DYNAMO_IS_TEST'] = 'True'
 
 from clari_dynamo.test.db import TestDB
 from clari_dynamo.migrate.run_migrations import *
@@ -22,9 +23,9 @@ class MigrationsTest(unittest.TestCase):
         names_ran, was_success = self.migrate_test('migrations')
         self.assertGreater(len(names_ran), 0)
         self.assertTrue(was_success)
-        names_ran, was_success = self.migrate_test('migrations')
 
         # Test idempotency
+        names_ran, was_success = self.migrate_test('migrations')
         self.assertEqual(len(names_ran), 0)
         self.assertTrue(was_success)
 
@@ -44,8 +45,11 @@ class MigrationsTest(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        # sets self.db in methods
         cls.db = TestDB.get()
 
     @classmethod
     def tearDownClass(cls):
+        cls.db.drop_table(META_TABLE_NAME)
+        cls.db.drop_table(MIGRATIONS_TABLE_NAME)
         TestDB.release()
