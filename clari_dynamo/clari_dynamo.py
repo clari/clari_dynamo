@@ -55,8 +55,7 @@ class ClariDynamo(object):
     @item_op
     def query(self, table_name, purpose, tenant_id, **query):
         boto_table = self.get_table(table_name)
-        # TODO: Paging -
-        # Implement paging by serializing underlying page data and
+        # TODO: Paging Implement paging by serializing underlying page data and
         # storing it for subsequent request.
         return boto_table.query_2(**query)
 
@@ -129,11 +128,10 @@ class ClariDynamo(object):
     def drop_table(self, table_name):
         return self.connection.delete_table(self._get_table_name(table_name))
 
-    @table_op
     def get_table(self, table_name, **kwargs):
         ret = BotoTable(self._get_table_name(table_name),
                 connection=self.connection, **kwargs)
-        ret.clari_description = ret.describe() # Arg, props not correct unless you call this
+        # ret.clari_description = ret.describe() # Arg, props not correct unless you call this
         return ret
 
     @table_op
@@ -273,9 +271,9 @@ class ClariDynamo(object):
 
     def _get_secs_since_increase(self, boto_table):
         default_timestamp = 0.0
-        timestamp = (boto_table.clari_description['Table']
-            ['ProvisionedThroughput'].get('LastIncreaseDateTime',
-                                          default_timestamp))
+        description = boto_table.describe()
+        timestamp = (description['Table']['ProvisionedThroughput']
+                     .get('LastIncreaseDateTime', default_timestamp))
         if timestamp == default_timestamp:
             logging.warn('Unable to determine LastIncreaseDateTime for table')
 
