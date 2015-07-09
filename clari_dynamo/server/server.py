@@ -3,6 +3,7 @@
 import os
 import sys
 import requests
+import simplejson
 from clari_dynamo.conf.constants import *
 
 # Hack for KMS patch - TODO: Remove after https://github.com/boto/boto/issues/2921
@@ -12,7 +13,6 @@ from boto.dynamodb2.table import Table
 from clari_dynamo.clari_dynamo import ClariDynamo
 from clari_dynamo.migrate.run_migrations import migrate
 from clari_dynamo.server import auth
-
 
 class Server(object):
     def __init__(self, _db):
@@ -28,7 +28,6 @@ class Server(object):
         ret['clari_dynamo']['tables'] = self.db.list_tables()
         return ret
 
-
     @cherrypy.expose
     @cherrypy.tools.json_in()
     @cherrypy.tools.json_out()
@@ -38,12 +37,11 @@ class Server(object):
         else:
             self.validate_request(table=table, tenant=tenant, purpose=purpose)
             data = cherrypy.request.json
-            self.db.put_item(table, data, tenant, purpose)
+            ret = self.db.put_item(table, data, tenant, purpose)
             logging.info('creating a new item in ' + table)
-            return { 'success': True }
+            return ret
 
     @cherrypy.expose
-    @cherrypy.tools.json_out()
     def get_item(self, table=None, tenant=None, purpose=None, query=None):
         if not cherrypy.request.method == 'GET':
             raise cherrypy.HTTPError(400, 'Please send a GET request')
@@ -53,7 +51,9 @@ class Server(object):
             id_query = json.loads(query)
             ret = self.db.get_item(table, tenant, purpose, **id_query)
             logging.info('fetched item ' + table)
-            return str(ret)
+            ret = simplejson.dumps(ret._data, use_decimal=True)
+            cherrypy.response.headers['Content-Type'] = 'application/json'
+            return ret
 
     def log_headers(self):
         headers = cherrypy.request.headers
