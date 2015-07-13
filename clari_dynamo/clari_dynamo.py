@@ -234,7 +234,7 @@ class ClariDynamo(object):
 
         def try_function():
             expected = boto_item.build_expects() if overwrite is False else None
-            boto_table.connection.put_item(table_name, final_data,
+            return boto_table.connection.put_item(table_name, final_data,
                 expected=expected, # Don't overwrite
                 condition_expression=condition,
                 expression_attribute_values=vars)
