@@ -14,6 +14,7 @@ from clari_dynamo.clari_dynamo import ClariDynamo
 from clari_dynamo.migrate.run_migrations import migrate
 from clari_dynamo.server import auth
 
+
 class Server(object):
     def __init__(self, _db):
         self.db = _db
@@ -106,11 +107,16 @@ if HIDE_ERRORS:
 
 if not AUTH_WEB_HOOK and BASIC_AUTH_DICT:
     check_password = cherrypy.lib.auth_basic.checkpassword_dict(BASIC_AUTH_DICT)
+
+    def auth_passthrough(*args, **kwargs):
+        ret = check_password(*args, **kwargs)
+        return ret
+
     app_config = {
         '/': {
             'tools.auth_basic.on': True,
             'tools.auth_basic.realm': 'clari_dynamo_' + ENV_NAME.encode('ascii'),
-            'tools.auth_basic.checkpassword': check_password,
+            'tools.auth_basic.checkpassword': auth_passthrough,
         },
     }
 else:
