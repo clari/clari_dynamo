@@ -61,7 +61,7 @@ class ClariDynamoTest(unittest.TestCase):
         }
         self.put_and_assert(db, expected, item, table_name)
 
-    def test4_s3_kms_data(self):
+    def test_s3_kms_data(self):
         expected = 'awesome data'
         db, table_name = self.setup_stuff()
         item = {
