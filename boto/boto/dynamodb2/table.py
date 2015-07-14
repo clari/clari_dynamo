@@ -121,7 +121,10 @@ class Table(object):
         if throughput is not None:
             self.throughput = throughput
 
-        self._dynamizer = NonBooleanDynamizer()
+        # self._dynamizer = NonBooleanDynamizer()
+        # cq no care backward compat with old dynamo clients since everything
+        # goes through this API
+        self._dynamizer = Dynamizer()
 
     def use_boolean(self):
         self._dynamizer = Dynamizer()
