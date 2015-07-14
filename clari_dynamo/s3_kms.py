@@ -16,8 +16,11 @@ BUCKET = CONNECTION.get_bucket(AWS_KMS_S3_BUCKET_NAME)
 
 
 def put(table_name, item_name, data):
+    # alphanumeric = 36 characters - so 25 chars gives around
+    # the same cardinality of GUID (about 2.4x)
     file_name = '{0:s}.{1:s}.{2:s}'.format(table_name, item_name,
-                                           utils.quick_random_str(6))
+                                           utils.quick_random_str(24))
+
     key = Key(BUCKET)
     key.key = file_name
     key.set_contents_from_string(data, headers=get_kms_headers())
