@@ -59,7 +59,7 @@ class ClariDynamoTest(unittest.TestCase):
                 '$base64': True
             }
         }
-        self.put_and_assert(db, expected, item, table_name)
+        self.put_get_delete(db, expected, item, table_name)
 
     def test_s3_kms_data(self):
         expected = 'awesome data'
@@ -71,7 +71,22 @@ class ClariDynamoTest(unittest.TestCase):
                 '$s3': True,
             }
         }
-        self.put_and_assert(db, expected, item, table_name)
+        self.put_get_delete(db, expected, item, table_name)
+
+    def test_get_partial_item(self):
+        expected = 'awesome data'
+        db, table_name = self.setup_stuff()
+        item = {
+            'id': self._testMethodName,
+            'expected': {
+                '$data': expected,
+                '$s3': True,
+            }
+        }
+        tenant_id, test_name = self.put(db, item, table_name)
+        retrieved = db.get_item(table_name, tenant_id, purpose=test_name,
+                        attributes=['id'], id=test_name)
+        self.assertTrue('expected' not in retrieved)
 
     def test_tenant_id_protection(self):
         db, table_name = self.setup_stuff()
@@ -83,7 +98,7 @@ class ClariDynamoTest(unittest.TestCase):
 
             }
         }
-        self.put_and_assert(db, expected, item, table_name)
+        self.put_get_delete(db, expected, item, table_name)
 
     def test_duplicate_error(self):
         db, table_name = self.setup_stuff()
@@ -187,13 +202,22 @@ class ClariDynamoTest(unittest.TestCase):
             increased_throughput=get_double_writes(
                 db.get_table(table_name)))
 
-    def put_and_assert(self, db, expected, item, table_name):
+    def put(self, db, item, table_name):
         tenant_id = '123'
         test_name = self._testMethodName
         db.put_item(table_name, item, tenant_id, purpose=test_name)
+        return tenant_id, test_name
+
+    def put_get(self, db, expected, item, table_name):
+        tenant_id, test_name = self.put(db, item, table_name)
         retrieved = db.get_item(table_name, tenant_id, purpose=test_name,
                                 id=test_name)
         self.assertEquals(retrieved['expected'], expected)
+        return retrieved, tenant_id, test_name
+
+    def put_get_delete(self, db, expected, item, table_name):
+        retrieved, tenant_id, test_name = self.put_get(db, expected, item,
+                                                       table_name)
         db.delete_item(table_name, retrieved, tenant_id, purpose=test_name)
 
     def create_test_table(self, name):

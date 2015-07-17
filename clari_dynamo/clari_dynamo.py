@@ -55,14 +55,20 @@ class ClariDynamo(object):
     @item_op
     def query(self, table_name, purpose, tenant_id, **query):
         boto_table = self.get_table(table_name)
-        # TODO: Paging Implement paging by serializing underlying page data and
+        # TODO: Implement paging by serializing underlying page data and
         # storing it for subsequent request.
         return boto_table.query_2(**query)
 
     @item_op
-    def get_item(self, table_name, tenant_id, purpose, **id_query):
+    def get_item(self, table_name, tenant_id, purpose, attributes=None, **id_query):
         boto_table = self.get_table(table_name)
-        item = self._get_with_retries(boto_table, table_name, id_query, retry=0)
+        if attributes is not None:
+            assert len(attributes) > 0, 'attributes should be a list'
+            if 'tenant_id' not in attributes:
+                attributes.append('tenant_id')
+            if 'encrypted_tenant_id' not in attributes:
+                attributes.append('encrypted_tenant_id')
+        item = self._get_with_retries(boto_table, table_name, id_query, attributes, retry=0)
         self._check_tenant_id(item, tenant_id)
         self._check_for_meta(item._data, boto_table, operation='get')
         return item
@@ -78,7 +84,8 @@ class ClariDynamo(object):
                           data access boundaries between db tenants
         :param purpose:
         :param condition: DynamoDB condition # https://goo.gl/VRx8ST
-        :return:
+
+        :return: Empty object on success: {}
         """
         boto_table = self.get_table(table_name)
         assert type(item) == dict
@@ -88,6 +95,8 @@ class ClariDynamo(object):
         item['created_at'] = item['updated_at'] = (
             str(datetime.now()))
         self._check_for_meta(item, boto_table, operation='put')
+
+        # TODO: Get Boto/Dynamo to return new object
         return self._put_with_retries(boto_table,
                     self._get_table_name(table_name), item, overwrite,
                     condition, vars, retry=0)
@@ -247,8 +256,8 @@ class ClariDynamo(object):
                 'This could be due to a duplicate insertion.')
         return ret
 
-    def _get_with_retries(self, boto_table, table_name, id_query, retry):
-        try_function = lambda: (boto_table.get_item(**id_query))
+    def _get_with_retries(self, boto_table, table_name, id_query, attributes, retry):
+        try_function = lambda: (boto_table.get_item(attributes=attributes, **id_query))
         ret = self._attempt_throttled_operation(try_function,
                 retry, boto_table,
                 increased_throughput=get_double_reads(boto_table))
