@@ -110,6 +110,24 @@ class ClariDynamoTest(unittest.TestCase):
         retrieved = db.get_item(table_name, tenant_id, purpose, id=test_name)
         db.delete_item(table_name, retrieved, tenant_id, purpose)
 
+    def test_overwrite(self):
+        db, table_name = self.setup_stuff()
+        test_name = purpose = self._testMethodName
+        expected = 'unique data'
+        item = {
+            'id': test_name,
+            'expected': {
+                '$data': expected,
+            }
+        }
+        tenant_id = '123'
+        db.put_item(table_name, item, tenant_id, purpose)
+        before = db.get_item(table_name, tenant_id, purpose, id=test_name)
+        db.put_item(table_name, item, tenant_id, purpose, overwrite=True)
+        after = db.get_item(table_name, tenant_id, purpose, id=test_name)
+        self.assertNotEquals(before['updated_at'], after['updated_at'])
+        db.delete_item(table_name, after, tenant_id, purpose)
+
     def test_successful_throttled_operation(self):
         try_msg = 'trying'
         try_function = lambda: print(try_msg)
