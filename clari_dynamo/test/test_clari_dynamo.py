@@ -84,9 +84,11 @@ class ClariDynamoTest(unittest.TestCase):
             }
         }
         tenant_id, test_name = self.put(db, item, table_name)
+        attributes = ['id']
         retrieved = db.get_item(table_name, tenant_id, purpose=test_name,
-                        attributes=['id'], id=test_name)
+                        attributes=attributes, id=test_name)
         self.assertTrue('expected' not in retrieved)
+        self.assertEquals(1, len(retrieved._data))
 
     def test_tenant_id_protection(self):
         db, table_name = self.setup_stuff()

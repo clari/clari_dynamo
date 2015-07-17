@@ -43,14 +43,18 @@ class Server(object):
             return ret
 
     @cherrypy.expose
-    def get_item(self, table=None, tenant=None, purpose=None, query=None):
+    def get_item(self, table=None, tenant=None, purpose=None, attributes=None,
+                 query=None):
         if not cherrypy.request.method == 'GET':
             raise cherrypy.HTTPError(400, 'Please send a GET request')
         else:
             self.validate_request(table=table, tenant=tenant,
                                   purpose=purpose, query=query)
+            if attributes:
+                attributes = json.loads(attributes)
             id_query = json.loads(query)
-            ret = self.db.get_item(table, tenant, purpose, **id_query)
+            ret = self.db.get_item(table, tenant, purpose, attributes,
+                                   **id_query)
             logging.info('fetched item ' + table)
             ret = simplejson.dumps(ret._data, use_decimal=True)
             cherrypy.response.headers['Content-Type'] = 'application/json'

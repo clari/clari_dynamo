@@ -26,7 +26,9 @@ from clari_dynamo.conf.cd_logger import logging
 from clari_dynamo.instrumentation import item_op, table_op
 
 MAX_RETRY_COUNT = 4
-
+TENANT_ID_NAME = 'tenant_id'
+ENCRYPTED_TENANT_ID_NAME = 'encrypted_tenant_id'
+MANDATORY_ATTRIBUTES = [TENANT_ID_NAME, ENCRYPTED_TENANT_ID_NAME]
 
 class ClariDynamo(object):
     def __init__(self, aws_access_key, aws_secret_access_key, is_secure,
@@ -62,15 +64,15 @@ class ClariDynamo(object):
     @item_op
     def get_item(self, table_name, tenant_id, purpose, attributes=None, **id_query):
         boto_table = self.get_table(table_name)
-        if attributes is not None:
-            assert len(attributes) > 0, 'attributes should be a list'
-            if 'tenant_id' not in attributes:
-                attributes.append('tenant_id')
-            if 'encrypted_tenant_id' not in attributes:
-                attributes.append('encrypted_tenant_id')
-        item = self._get_with_retries(boto_table, table_name, id_query, attributes, retry=0)
+        _attributes = attributes[:]
+        if _attributes is not None:
+            assert len(_attributes) > 0, 'attributes should be a list'
+            self._add_mandatory_attributes(_attributes)
+        item = self._get_with_retries(boto_table, table_name, id_query,
+                                      _attributes, retry=0)
         self._check_tenant_id(item, tenant_id)
         self._check_for_meta(item._data, boto_table, operation='get')
+        self._hide_mandatory_attributes(item)
         return item
 
     @item_op
@@ -320,6 +322,16 @@ class ClariDynamo(object):
         time_to_sleep = sleep_coeff * 2 ** retry * random.random()
         logging.info('sleeping for %f seconds' % time_to_sleep)
         time.sleep(time_to_sleep)
+
+    def _add_mandatory_attributes(self, attributes):
+        for attr in MANDATORY_ATTRIBUTES:
+            if attr not in attributes:
+                attributes.append(attr)
+
+    def _hide_mandatory_attributes(self, item):
+        for attr in MANDATORY_ATTRIBUTES:
+            if attr in item:
+                del item[attr]
 
     class AuthException(Exception):
         pass
