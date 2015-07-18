@@ -18,7 +18,7 @@ hosted with Cherrypy.
 ## Setup
 - Get anaconda python 2.7
 - Java 6+ for DynamoDB local
-- `pip install -r requirements.txt && cd dynamo-local && python run.py`
+- `pip install -r requirements.txt`
 - `cp conf/secrets.example.py conf/secrets.py` and setup your secrets
 
 ## Migrations - zero downtime
