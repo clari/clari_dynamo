@@ -72,7 +72,7 @@ class ClariDynamo(object):
                                       _attributes, retry=0)
         self._check_tenant_id(item, tenant_id)
         self._check_for_meta(item._data, boto_table, operation='get')
-        self._hide_mandatory_attributes(item)
+        self._hide_mandatory_attributes(item, attributes)
         return item
 
     @item_op
@@ -328,9 +328,9 @@ class ClariDynamo(object):
             if attr not in attributes:
                 attributes.append(attr)
 
-    def _hide_mandatory_attributes(self, item):
+    def _hide_mandatory_attributes(self, item, orig_attributes):
         for attr in MANDATORY_ATTRIBUTES:
-            if attr in item:
+            if attr in item and attr not in orig_attributes:
                 del item[attr]
 
     class AuthException(Exception):
