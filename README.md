@@ -1,4 +1,6 @@
-# Clari dynamo - DynamoDB with a cherry on top 
+# ClariDynamo - DynamoDB with a cherry on top 
+*Still in early alpha and limited to puts and gets. Goal is to achieve 
+extremely robust functionality before adding more.*
 Several high level features 
 added to DynamoDB via a customizable service layer
 hosted with Cherrypy.
@@ -16,12 +18,12 @@ hosted with Cherrypy.
 - Deploy right now on Heroku - TODO: Add Heroku button
 
 ## Setup
-- Get anaconda python 2.7
+- Get anaconda python 2.7 http://continuum.io/downloads
 - Java 6+ for DynamoDB local
-- `pip install -r requirements.txt && cd dynamo-local && python run.py`
+- `pip install -r requirements.txt`
 - `cp conf/secrets.example.py conf/secrets.py` and setup your secrets
 
-## Migrations - zero downtime
+## Migrations
 - Add new with `python new_migration.py`
 - Runs at server start (TODO: in background)
 - Retries failed migrations on restart
@@ -35,8 +37,6 @@ hosted with Cherrypy.
 [ ] S3 backups
 [ ] Use IAM credentials in non-dev environments instead of basic auth
 [ ] Queries, scans, and underlying paging ability.
-[ ] Java Client
-[ ] Datadog API hook
 
 ## Possibilities
 - Instant transformations - map, filter, join, split, move, etc...
