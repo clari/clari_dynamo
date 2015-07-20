@@ -64,10 +64,13 @@ class ClariDynamo(object):
     @item_op
     def get_item(self, table_name, tenant_id, purpose, attributes=None, **id_query):
         boto_table = self.get_table(table_name)
-        _attributes = attributes[:]
-        if _attributes is not None:
-            assert len(_attributes) > 0, 'attributes should be a list'
-            self._add_mandatory_attributes(_attributes)
+        if attributes is None:
+            _attributes = None
+        else:
+            assert len(attributes) > 0, 'attributes should be a list'
+            _attributes = attributes[:]
+
+        self._add_mandatory_attributes(_attributes)
         item = self._get_with_retries(boto_table, table_name, id_query,
                                       _attributes, retry=0)
         self._check_tenant_id(item, tenant_id)
@@ -324,11 +327,15 @@ class ClariDynamo(object):
         time.sleep(time_to_sleep)
 
     def _add_mandatory_attributes(self, attributes):
+        if not attributes:
+            return
         for attr in MANDATORY_ATTRIBUTES:
             if attr not in attributes:
                 attributes.append(attr)
 
     def _hide_mandatory_attributes(self, item, orig_attributes):
+        if not orig_attributes:
+            return
         for attr in MANDATORY_ATTRIBUTES:
             if attr in item and attr not in orig_attributes:
                 del item[attr]
