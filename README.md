@@ -1,6 +1,7 @@
 # ClariDynamo - DynamoDB with a cherry on top 
 *Still in early alpha and limited to puts and gets. Goal is to achieve 
 extremely robust functionality before adding more.*
+
 Several high level features 
 added to DynamoDB via a customizable service layer
 hosted with Cherrypy.
