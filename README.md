@@ -34,10 +34,10 @@ hosted with Cherrypy.
   worker container
   
 ## TODO
-[ ] Run migrations in background
-[ ] S3 backups
-[ ] Use IAM credentials in non-dev environments instead of basic auth
-[ ] Queries, scans, and underlying paging ability.
+* [ ] Run migrations in background
+* [ ] S3 backups
+* [ ] Use IAM credentials in non-dev environments instead of basic auth
+* [ ] Queries, scans, and underlying paging ability.
 
 ## Possibilities
 - Instant transformations - map, filter, join, split, move, etc...
