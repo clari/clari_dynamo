@@ -1,4 +1,5 @@
-*Still in early alpha and limited to puts and gets.*
+\**Still in early alpha and limited to puts and gets. Goal is to achieve 
+extremely robust functionality before adding more features.*
 
 # ClariDynamo - DynamoDB with a cherry on top 
 
