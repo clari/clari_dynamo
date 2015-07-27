@@ -174,30 +174,3 @@ Percentage of the requests served within a certain time (ms)
   98%    297
   99%    306
  100%    315 (longest request)
- 
-# Store emails with created time / iam user / origin ip
-# No need to worry about change tracking for now
-# No need to worry about migrations yet
-# Should log every response time
-# See about creating dev cluster (do it in US-west with user's machine name prefixing all tables) - setup python project (anaconda) - port 55555
-# Use cherrypy
-# Deploy self - needs to go not through Heroku due to 30 sec limit?
-# Optional auth server callback - api.clari.com with cookie (5 minute expiration) -
-
-
-# users = Table.create('users', schema=[
-#     HashKey('refId'), # defaults to STRING data_type
-#     RangeKey('userId'),
-#
-# ], throughput={
-#     'read': 5,
-#     'write': 15,
-# }, global_indexes=[
-#     GlobalAllIndex('EverythingIndex', parts=[
-#         HashKey('account_type'),
-#     ],
-#     throughput={
-#         'read': 1,
-#         'write': 1,
-#     })
-# ],
