@@ -33,10 +33,14 @@ Wrapper service providing several high level features on top of DynamoDB, S3, KM
   worker container
   
 ## TODO
-* [ ] Run migrations in background
-* [ ] S3 backups
-* [ ] Use IAM credentials in non-dev environments instead of basic auth
-* [ ] Queries, scans, and underlying paging ability.
+[ ] Run migrations in background
+[ ] S3 backups
+[ ] Use IAM credentials in non-dev environments instead of basic auth
+[ ] Queries, scans, and underlying paging ability.
+[ ] Add hash/range key hash to encrypted_tenant_id to prevent duplicates
+    Right now encrypted_tenant_id's are all unique but this is not
+    enforced on read. Most efficient way to do this would be to
+    include hash/range key in encrypted_tenant_id.
 
 ## Possibilities
 - Instant transformations - map, filter, join, split, move, etc...

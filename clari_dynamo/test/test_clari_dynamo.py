@@ -17,7 +17,7 @@ from boto.dynamodb2.items import Item
 import unittest
 
 from clari_dynamo.clari_dynamo import get_double_reads, get_double_writes
-from clari_dynamo.clari_dynamo import ClariDynamo
+from clari_dynamo.clari_dynamo import ClariDynamo, ENCRYPTED_TENANT_ID_NAME
 from clari_dynamo.test.db import TestDB
 from clari_dynamo.conf.cd_logger import logging
 
@@ -214,6 +214,7 @@ class ClariDynamoTest(unittest.TestCase):
         tenant_id, test_name = self.put(db, item, table_name)
         retrieved = db.get_item(table_name, tenant_id, purpose=test_name,
                                 id=test_name)
+        self.assertTrue(ENCRYPTED_TENANT_ID_NAME not in retrieved)
         self.assertEquals(retrieved['expected'], expected)
         return retrieved, tenant_id, test_name
 

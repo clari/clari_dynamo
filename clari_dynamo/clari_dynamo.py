@@ -76,6 +76,7 @@ class ClariDynamo(object):
         self._check_tenant_id(item, tenant_id)
         self._check_for_meta(item._data, boto_table, operation='get')
         self._hide_mandatory_attributes(item, attributes)
+        self._hide_internal_fields(item)
         return item
 
     @item_op
@@ -339,6 +340,10 @@ class ClariDynamo(object):
         for attr in MANDATORY_ATTRIBUTES:
             if attr in item and attr not in orig_attributes:
                 del item[attr]
+
+    def _hide_internal_fields(self, item):
+        if ENCRYPTED_TENANT_ID_NAME in item:
+            del item[ENCRYPTED_TENANT_ID_NAME]
 
     class AuthException(Exception):
         pass
